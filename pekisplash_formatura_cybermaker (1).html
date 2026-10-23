@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PekiSplash - Formatura CyberMaker | Issake & Davi Stella</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+            color: #f8fafc;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .title-glow {
+            text-shadow: 0 4px 0 #0369a1, 0 8px 25px rgba(56, 189, 248, 0.75);
+        }
+        .btn-play {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+            box-shadow: 0 6px 0 #075985, 0 12px 25px rgba(2, 132, 199, 0.5);
+            transition: all 0.15s ease;
+        }
+        .btn-play:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #075985, 0 15px 30px rgba(56, 189, 248, 0.65);
+        }
+        .btn-play:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #075985;
+        }
+        .btn-gold {
+            background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+            box-shadow: 0 5px 0 #92400e, 0 10px 20px rgba(245, 158, 11, 0.4);
+            transition: all 0.15s ease;
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+        }
+        .btn-gold:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #92400e;
+        }
+        /* Scrollbar estilizada para a vitrine de skins */
+        .skin-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .skin-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 8px;
+        }
+        .skin-scroll::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.5);
+            border-radius: 8px;
+        }
+        canvas#gameCanvas {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            display: block;
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4">
+
+    <!-- BARRA DE TOPO: CRÉDITOS CYBERMAKER E CONTROLES DE ÁUDIO / TELA CHEIA -->
+    <header class="w-full max-w-5xl flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 border border-cyan-500/30 rounded-2xl px-4 py-2.5 shadow-lg mb-2">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-water text-white text-lg"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="font-display font-bold text-lg text-cyan-300 tracking-wide">PEKISPLASH</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full">
+                        Formatura CyberMaker
+                    </span>
+                </div>
+                <p class="text-xs text-slate-300">
+                    Desenvolvido por <strong class="text-white">Issake</strong> & <strong class="text-white">Davi Stella</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Status Rápido & Botões de Utilidade -->
+        <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 bg-slate-800/90 border border-amber-400/40 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-300">
+                <i class="fa-solid fa-circle text-amber-200 text-[10px]"></i>
+                <span>Pérolas:</span>
+                <span id="headerPearlsCount" class="text-white font-extrabold">20</span>
+            </div>
+
+            <button id="musicToggleBtn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-cyan-500/30 text-cyan-300 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer" title="Ativar/Desativar Música Relaxante">
+                <i id="musicIcon" class="fa-solid fa-volume-high"></i>
+                <span id="musicText" class="hidden sm:inline">Música: ON</span>
+            </button>
+
+            <button id="fullscreenBtn" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer" title="Tela Cheia">
+                <i class="fa-solid fa-expand"></i>
+                <span class="hidden md:inline">Tela Cheia</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DO JOGO -->
+    <main class="w-full max-w-5xl flex flex-col items-center">
+        <div id="gameContainer" class="relative w-full rounded-2xl overflow-hidden border-2 border-cyan-500/40 bg-slate-950">
+
+            <!-- CANVAS DO JOGO -->
+            <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+            <!-- HUD DURANTE A PARTIDA (3 Vidas, Horário, Pontos e Pérolas) -->
+            <div id="inGameHud" class="hidden absolute top-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-10">
+                <!-- 3 Corações de Vida -->
+                <div class="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-rose-500/40 px-3.5 py-1.5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-bold text-rose-200 uppercase tracking-wider mr-1">Vidas:</span>
+                    <div id="heartsContainer" class="flex items-center gap-1.5 text-lg">
+                        <i class="fa-solid fa-heart text-rose-500 drop-shadow"></i>
+                        <i class="fa-solid fa-heart text-rose-500 drop-shadow"></i>
+                        <i class="fa-solid fa-heart text-rose-500 drop-shadow"></i>
+                    </div>
+                </div>
+
+                <!-- Indicador de Fase do Dia (Manhã -> Tarde -> Pôr do Sol -> Noite) -->
+                <div class="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md border border-cyan-400/30 px-3.5 py-1.5 rounded-2xl shadow-lg">
+                    <span id="timePhaseIcon" class="text-base">🌅</span>
+                    <span id="timePhaseLabel" class="text-xs font-bold text-cyan-200 tracking-wide">Manhã Serena</span>
+                </div>
+
+                <!-- Pontuação, Pérolas da Partida e Recorde -->
+                <div class="flex items-center gap-2.5 bg-slate-900/80 backdrop-blur-md border border-amber-400/40 px-3.5 py-1.5 rounded-2xl shadow-lg">
+                    <div class="text-xs font-bold text-amber-300 flex items-center gap-1">
+                        <span>⚪ Pérolas:</span>
+                        <span id="hudPearls" class="text-white font-extrabold text-sm">0</span>
+                    </div>
+                    <div class="h-3 w-[1px] bg-slate-600"></div>
+                    <div class="text-xs font-bold text-cyan-300">
+                        <span>Pontos:</span>
+                        <span id="hudScore" class="text-white font-extrabold text-sm">0000</span>
+                    </div>
+                    <div class="h-3 w-[1px] bg-slate-600 hidden sm:block"></div>
+                    <div class="text-xs font-bold text-slate-400 hidden sm:block">
+                        <span>Recorde:</span>
+                        <span id="hudHigh" class="text-amber-300 font-extrabold">0000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- CAPA INICIAL (HOME): PEKISPLASH NO CENTRO + JOGAR + VITRINE LATERAL -->
+            <!-- =================================================================== -->
+            <div id="homeOverlay" class="absolute inset-0 bg-slate-950/55 backdrop-blur-[3px] flex flex-col md:flex-row items-center justify-between p-3 sm:p-5 z-20">
+                
+                <!-- Espaçador esquerdo em telas grandes para deixar o título PEKISPLASH bem no centro -->
+                <div class="hidden lg:flex flex-col justify-between w-52 h-full p-2 pointer-events-none">
+                    <div class="bg-slate-900/85 border border-cyan-500/30 rounded-2xl p-3 shadow-lg">
+                        <p class="text-[11px] font-bold text-cyan-300 uppercase tracking-wider mb-1">
+                            <i class="fa-solid fa-graduation-cap mr-1"></i> Apresentação Oficial
+                        </p>
+                        <p class="text-xs text-slate-200 leading-relaxed">
+                            Projeto de formatura de final de curso do <strong class="text-amber-300">CyberMaker</strong>.
+                        </p>
+                        <div class="mt-2 pt-2 border-t border-slate-700/80 text-[11px] text-slate-300">
+                            Criadores:<br>
+                            <strong class="text-white">• Issake</strong><br>
+                            <strong class="text-white">• Davi Stella</strong>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/85 border border-amber-400/30 rounded-2xl p-3 shadow-lg">
+                        <p class="text-[11px] font-bold text-amber-300 uppercase mb-1">Como Jogar:</p>
+                        <ul class="text-[11px] text-slate-200 space-y-1">
+                            <li>• <strong>1 Clique / Espaço:</strong> Salta por cima da pedra</li>
+                            <li>• <strong>Mergulhe no vão:</strong> Pegue as pérolas entre as pedras!</li>
+                            <li>• <strong>3 Corações:</strong> Você tem 3 vidas por partida</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- CENTRO DA CAPA: NOME "PEKISPLASH" E BOTÃO "JOGAR" DEBAIXO -->
+                <div class="flex-1 flex flex-col items-center justify-center text-center px-2 my-auto">
+                    <div class="inline-flex items-center gap-2 bg-cyan-500/20 border border-cyan-300/40 text-cyan-200 px-3.5 py-1 rounded-full text-xs font-bold mb-2 shadow">
+                        <i class="fa-solid fa-star text-amber-300"></i>
+                        <span>FORMATURA CYBERMAKER • ISSAKE & DAVI STELLA</span>
+                    </div>
+
+                    <!-- Título Principal Bem no Meio -->
+                    <h1 class="font-display text-4xl sm:text-6xl md:text-7xl font-bold text-white tracking-wider title-glow mb-2">
+                        PEKISPLASH
+                    </h1>
+                    <p class="text-xs sm:text-sm text-cyan-100 max-w-md mb-3 font-semibold drop-shadow">
+                        Salte as pedras marinhas com 1 clique, mergulhe nos espaços cheios de pérolas e colecione skins de sereia!
+                    </p>
+
+                    <!-- Mini Preview da Roupa Equipada -->
+                    <div class="flex items-center gap-3 bg-slate-900/90 border border-cyan-400/40 px-4 py-1.5 rounded-2xl mb-4 shadow-md">
+                        <canvas id="equippedPreviewCanvas" width="76" height="48" class="w-16 h-10"></canvas>
+                        <div class="text-left">
+                            <span class="text-[10px] uppercase tracking-wider text-cyan-300 font-bold block">Sereia Equipada</span>
+                            <span id="equippedSkinName" class="text-xs sm:text-sm font-extrabold text-white">Peki Original</span>
+                        </div>
+                    </div>
+
+                    <!-- BOTÃO JOGAR BEM DEBAIXO DO NOME PEKISPLASH -->
+                    <button id="startPlayBtn" class="btn-play px-10 sm:px-14 py-3.5 sm:py-4 rounded-2xl font-display font-bold text-xl sm:text-2xl text-white tracking-wider flex items-center gap-3 cursor-pointer">
+                        <i class="fa-solid fa-play"></i>
+                        <span>JOGAR</span>
+                    </button>
+                </div>
+
+                <!-- CANTO LATERAL DIREITO: VITRINE / LOJA COM 10 SKINS DE SEREIA -->
+                <div class="w-full md:w-72 lg:w-80 h-48 sm:h-56 md:h-full bg-slate-900/95 border-2 border-cyan-400/40 rounded-2xl p-3 flex flex-col shadow-2xl">
+                    <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-700">
+                        <div>
+                            <h2 class="font-display font-bold text-sm text-cyan-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                                <span>SKINS DE SEREIA (10)</span>
+                            </h2>
+                            <p class="text-[10px] text-slate-400">Compre roupas com suas pérolas!</p>
+                        </div>
+                        <div class="flex items-center gap-1 bg-amber-500/20 border border-amber-400/50 px-2.5 py-1 rounded-xl text-xs font-extrabold text-amber-300">
+                            <span>⚪</span>
+                            <span id="shopPearlsBalance">20</span>
+                        </div>
+                    </div>
+
+                    <!-- Lista rolável das 10 skins -->
+                    <div id="skinsListContainer" class="skin-scroll flex-1 overflow-y-auto space-y-2 pr-1">
+                        <!-- Preenchido dinamicamente via JS -->
+                    </div>
+
+                    <!-- Botão auxiliar para a apresentação da Formatura (ganhar pérolas para demonstrar skins) -->
+                    <div class="pt-2 mt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+                        <span class="text-[10px] text-slate-400">Modo Apresentação:</span>
+                        <button id="bonusPearlsBtn" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-[11px] font-bold transition cursor-pointer">
+                            +50 Pérolas ⚪
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =================================================================== -->
+            <!-- TELA DE GAME OVER: "VOLTAR A JOGAR" E "IR PARA HOME"                -->
+            <!-- =================================================================== -->
+            <div id="gameOverOverlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-30">
+                <div class="w-full max-w-md bg-slate-900 border-2 border-cyan-500/40 rounded-3xl p-6 text-center shadow-2xl">
+                    <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-400 text-2xl">
+                        <i class="fa-solid fa-heart-crack"></i>
+                    </div>
+
+                    <h2 class="font-display text-3xl font-bold text-white mb-1">FIM DE JOGO!</h2>
+                    <p class="text-xs text-slate-300 mb-4">
+                        A Peki bateu em 3 pedras marinhas! Veja seu resultado:
+                    </p>
+
+                    <div class="grid grid-cols-3 gap-2 bg-slate-800/90 border border-slate-700 rounded-2xl p-3 mb-5">
+                        <div>
+                            <span class="text-[10px] uppercase text-slate-400 font-bold block">Pontuação</span>
+                            <span id="overScore" class="font-display text-xl font-bold text-cyan-300">0</span>
+                        </div>
+                        <div class="border-x border-slate-700">
+                            <span class="text-[10px] uppercase text-slate-400 font-bold block">Pérolas Ganhas</span>
+                            <span id="overRunPearls" class="font-display text-xl font-bold text-amber-300">+0 ⚪</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase text-slate-400 font-bold block">Total Guardado</span>
+                            <span id="overTotalPearls" class="font-display text-xl font-bold text-white">0 ⚪</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <button id="retryGameBtn" class="w-full sm:flex-1 btn-play py-3 px-5 rounded-2xl font-display font-bold text-base text-white flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>VOLTAR A JOGAR</span>
+                        </button>
+                        <button id="goHomeBtn" class="w-full sm:flex-1 btn-gold py-3 px-5 rounded-2xl font-display font-bold text-base text-slate-950 flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-house"></i>
+                            <span>IR PARA HOME</span>
+                        </button>
+                    </div>
+
+                    <p class="text-[11px] text-slate-400 mt-4">
+                        Formatura <strong class="text-cyan-300">CyberMaker</strong> • Desenvolvido por <strong class="text-white">Issake & Davi Stella</strong>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTÕES DE CONTROLE RÁPIDO PARA CELULAR / TELAS TOUCH OU MOUSE -->
+        <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-2.5 mt-2.5">
+            <button id="jumpControlBtn" class="w-full sm:flex-1 py-3 px-4 rounded-2xl btn-play text-white font-display font-bold text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-arrow-up"></i>
+                <span>1 CLIQUE PARA SALTAR FORA DO MAR (ESPAÇO / SETA ↑)</span>
+            </button>
+            <button id="diveControlBtn" class="w-full sm:w-64 py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-200 font-display font-bold text-sm flex items-center justify-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-arrow-down"></i>
+                <span>MERGULHAR RÁPIDO (SETA ↓)</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- RODAPÉ DE CRÉDITOS -->
+    <footer class="w-full max-w-5xl mt-2 text-center py-2 px-4 rounded-xl bg-slate-900/70 border border-slate-800 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
+        <div>
+            <strong class="text-cyan-300">PekiSplash</strong> • Inspirado no Dino Run em Alto-Mar
+        </div>
+        <div>
+            Apresentação de Formatura <strong class="text-amber-300">CyberMaker</strong> • Criado por <strong class="text-white">Issake & Davi Stella</strong>
+        </div>
+    </footer>
+
+    <!-- =================================================================== -->
+    <!-- SCRIPT COMPLETO DO JOGO                                             -->
+    <!-- =================================================================== -->
+    <script>
+        /**
+         * PEKISPLASH - FORMATURA CYBERMAKER
+         * Desenvolvido por: Issake e Davi Stella
+         */
+
+        // --- 1. CATÁLOGO COM 10 SKINS DE SEREIA DE CORES DIFERENTES ---
+        const MERMAID_SKINS = [
+            {
+                id: 'classic',
+                name: 'Peki Original',
+                desc: 'Marrom fofa com detalhes pretos (Grátis)',
+                price: 0,
+                bodyLight: '#c68b59',
+                bodyMid: '#8b5a2b',
+                bodyDark: '#4a2c11',
+                belly: '#e6ccb2',
+                tailBase: '#9c6631',
+                tailMid: '#7c4d22',
+                tailFin: '#14110f',
+                details: '#111111',
+                accessory: 'none'
+            },
+            {
+                id: 'emerald',
+                name: 'Sereia Esmeralda',
+                desc: 'Verde esmeralda com detalhes dourados',
+                price: 15,
+                bodyLight: '#6ee7b7',
+                bodyMid: '#10b981',
+                bodyDark: '#065f46',
+                belly: '#d1fae5',
+                tailBase: '#34d399',
+                tailMid: '#059669',
+                tailFin: '#064e3b',
+                details: '#fbbf24',
+                accessory: 'star'
+            },
+            {
+                id: 'amethyst',
+                name: 'Sereia Ametista',
+                desc: 'Roxa mística com tiara de pérolas',
+                price: 25,
+                bodyLight: '#d8b4fe',
+                bodyMid: '#9333ea',
+                bodyDark: '#581c87',
+                belly: '#f3e8ff',
+                tailBase: '#c084fc',
+                tailMid: '#7e22ce',
+                tailFin: '#3b0764',
+                details: '#fde047',
+                accessory: 'tiara'
+            },
+            {
+                id: 'coral_pink',
+                name: 'Sereia Rosa Coral',
+                desc: 'Rosa vibrante com flor tropical',
+                price: 35,
+                bodyLight: '#fda4af',
+                bodyMid: '#f43f5e',
+                bodyDark: '#9f1239',
+                belly: '#ffe4e6',
+                tailBase: '#fb7185',
+                tailMid: '#e11d48',
+                tailFin: '#881337',
+                details: '#fff1f2',
+                accessory: 'flower'
+            },
+            {
+                id: 'sky_blue',
+                name: 'Sereia Azul Celeste',
+                desc: 'Azul cristalino das águas tropicais',
+                price: 45,
+                bodyLight: '#7dd3fc',
+                bodyMid: '#0284c7',
+                bodyDark: '#0c4a6e',
+                belly: '#e0f2fe',
+                tailBase: '#38bdf8',
+                tailMid: '#0369a1',
+                tailFin: '#082f49',
+                details: '#bae6fd',
+                accessory: 'star'
+            },
+            {
+                id: 'golden_sun',
+                name: 'Sereia Sol Dourado',
+                desc: 'Dourado reluzente com coroa real',
+                price: 60,
+                bodyLight: '#fde047',
+                bodyMid: '#f59e0b',
+                bodyDark: '#92400e',
+                belly: '#fef9c3',
+                tailBase: '#fbbf24',
+                tailMid: '#d97706',
+                tailFin: '#78350f',
+                details: '#451a03',
+                accessory: 'crown'
+            },
+            {
+                id: 'crimson',
+                name: 'Sereia Rubi Carmesim',
+                desc: 'Vermelho rubi intenso com detalhes pretos',
+                price: 75,
+                bodyLight: '#fca5a5',
+                bodyMid: '#dc2626',
+                bodyDark: '#7f1d1d',
+                belly: '#fee2e2',
+                tailBase: '#ef4444',
+                tailMid: '#991b1b',
+                tailFin: '#09090b',
+                details: '#111111',
+                accessory: 'crown'
+            },
+            {
+                id: 'turquoise_neon',
+                name: 'Sereia Turquesa Neon',
+                desc: 'Ciano bioluminescente do fundo do mar',
+                price: 90,
+                bodyLight: '#67e8f9',
+                bodyMid: '#06b6d4',
+                bodyDark: '#155e75',
+                belly: '#cffafe',
+                tailBase: '#22d3ee',
+                tailMid: '#0891b2',
+                tailFin: '#ec4899',
+                details: '#f472b6',
+                accessory: 'tiara'
+            },
+            {
+                id: 'pearl_white',
+                name: 'Sereia Branca Pérola',
+                desc: 'Branco perolado com reflexos prateados',
+                price: 110,
+                bodyLight: '#ffffff',
+                bodyMid: '#cbd5e1',
+                bodyDark: '#475569',
+                belly: '#f8fafc',
+                tailBase: '#e2e8f0',
+                tailMid: '#94a3b8',
+                tailFin: '#1e293b',
+                details: '#38bdf8',
+                accessory: 'crown'
+            },
+            {
+                id: 'cybermaker',
+                name: 'Galáxia CyberMaker',
+                desc: 'Skin Especial de Formatura com Capelo!',
+                price: 130,
+                bodyLight: '#475569',
+                bodyMid: '#1e293b',
+                bodyDark: '#090d16',
+                belly: '#22d3ee',
+                tailBase: '#a855f7',
+                tailMid: '#ec4899',
+                tailFin: '#00f2fe',
+                details: '#22d3ee',
+                accessory: 'grad_cap'
+            }
+        ];
+
+        // --- 2. ESTADO SALVO NO NAVEGADOR (PÉROLAS E SKINS) ---
+        let savedPearls = parseInt(localStorage.getItem('pekisplash_pearls_v2') || '20', 10);
+        let unlockedSkins = JSON.parse(localStorage.getItem('pekisplash_unlocked_v2') || '["classic"]');
+        let equippedSkinId = localStorage.getItem('pekisplash_equipped_v2') || 'classic';
+        let highScore = parseInt(localStorage.getItem('pekisplash_highscore_v2') || '0', 10);
+
+        function savePlayerData() {
+            localStorage.setItem('pekisplash_pearls_v2', String(savedPearls));
+            localStorage.setItem('pekisplash_unlocked_v2', JSON.stringify(unlockedSkins));
+            localStorage.setItem('pekisplash_equipped_v2', equippedSkinId);
+            localStorage.setItem('pekisplash_highscore_v2', String(highScore));
+        }
+
+        function getEquippedSkin() {
+            return MERMAID_SKINS.find(s => s.id === equippedSkinId) || MERMAID_SKINS[0];
+        }
+
+        // --- 3. SISTEMA DE MÚSICA RELAXANTE E EFEITOS SONOROS (WEB AUDIO API) ---
+        class RelaxingOceanAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.musicTimer = null;
+                this.step = 0;
+                // Acordes e notas pentatônicas suaves (estilo Lofi / Kalimba do Mar)
+                this.melodyNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 392.00, 440.00, 587.33, 440.00, 392.00];
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            startRelaxingMusic() {
+                this.init();
+                if (this.musicTimer) return;
+                this.musicTimer = setInterval(() => {
+                    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+                    const freq = this.melodyNotes[this.step % this.melodyNotes.length];
+                    this.playSoftNote(freq, 0.9, 0.045);
+                    if (this.step % 4 === 0) {
+                        this.playSoftNote(freq * 0.5, 1.8, 0.03);
+                    }
+                    this.step++;
+                }, 520);
+            }
+
+            playSoftNote(freq, duration, vol) {
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(vol, now + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                } catch (e) {}
+            }
+
+            playJump() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(280, now);
+                    osc.frequency.exponentialRampToValueAtTime(580, now + 0.18);
+                    gain.gain.setValueAtTime(0.11, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } catch (e) {}
+            }
+
+            playPearl() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(740, now);
+                    osc.frequency.setValueAtTime(987.77, now + 0.07);
+                    gain.gain.setValueAtTime(0.10, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.24);
+                } catch (e) {}
+            }
+
+            playHit() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.linearRampToValueAtTime(75, now + 0.25);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.28);
+                } catch (e) {}
+            }
+        }
+
+        const audio = new RelaxingOceanAudio();
+
+        // --- 4. CONFIGURAÇÃO DO CANVAS E REGRAS DO MAR (MENOS ÁGUA = 34%) ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const GAME_WIDTH = 960;
+        const GAME_HEIGHT = 540;
+
+        // O mar ocupa apenas 34% da parte inferior (de 356px até 540px),
+        // deixando 66% de céu amplo para os saltos, gaivotas, pôr do sol e noite!
+        const SEA_LEVEL = Math.round(GAME_HEIGHT * 0.66); // Y = 356
+        const SAND_FLOOR = GAME_HEIGHT - 26;             // Y = 514
+
+        let gameState = 'HOME'; // 'HOME', 'PLAYING', 'GAMEOVER'
+        let score = 0;
+        let runPearls = 0;
+        let lives = 3;
+        // Velocidade mais calma e gostosa de jogar
+        let gameSpeed = 3.2;
+        let worldDistance = 0;
+        let frameCount = 0;
+
+        // --- 5. FUNÇÃO QUE DESENHA A SEREIA PEKI (NO JOGO E NAS VITRINES) ---
+        function drawMermaidCreature(targetCtx, x, y, skin, tailAngle, isBlinking, tiltAngle = 0) {
+            targetCtx.save();
+            targetCtx.translate(x, y);
+            targetCtx.rotate(tiltAngle);
+
+            const wag = Math.sin(tailAngle) * 7;
+            const wagTip = Math.cos(tailAngle) * 10;
+
+            // 1. CAUDA DE SEREIA ARTICULADA COM DETALHES PRETOS/COLORIDOS
+            targetCtx.save();
+            targetCtx.beginPath();
+            targetCtx.moveTo(-8, 4);
+            targetCtx.quadraticCurveTo(-24, 3 + wag * 0.5, -38, 1 + wag);
+            targetCtx.quadraticCurveTo(-24, 15 + wag * 0.5, -6, 13);
+            targetCtx.closePath();
+
+            const tailGrad = targetCtx.createLinearGradient(-6, 0, -40, 12);
+            tailGrad.addColorStop(0, skin.tailBase);
+            tailGrad.addColorStop(1, skin.tailMid);
+            targetCtx.fillStyle = tailGrad;
+            targetCtx.fill();
+            targetCtx.lineWidth = 2.2;
+            targetCtx.strokeStyle = '#111111';
+            targetCtx.stroke();
+
+            // Listras de detalhe na cauda (pretas na skin original marrom)
+            targetCtx.strokeStyle = skin.details;
+            targetCtx.lineWidth = 2.4;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-16, 4 + wag * 0.25);
+            targetCtx.lineTo(-17, 11 + wag * 0.25);
+            targetCtx.moveTo(-25, 4 + wag * 0.55);
+            targetCtx.lineTo(-26, 10 + wag * 0.55);
+            targetCtx.stroke();
+
+            // Nadadeira Caudal Dupla de Sereia
+            targetCtx.translate(-37, 5 + wag);
+            targetCtx.rotate(wagTip * 0.03);
+            targetCtx.fillStyle = skin.tailFin;
+            targetCtx.strokeStyle = '#111111';
+            targetCtx.lineWidth = 2;
+
+            // Aba superior da cauda
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, 0);
+            targetCtx.quadraticCurveTo(-12, -14, -18, -9);
+            targetCtx.quadraticCurveTo(-10, -2, 0, 2);
+            targetCtx.fill();
+            targetCtx.stroke();
+
+            // Aba inferior da cauda
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, 2);
+            targetCtx.quadraticCurveTo(-12, 15, -18, 10);
+            targetCtx.quadraticCurveTo(-10, 4, 0, 0);
+            targetCtx.fill();
+            targetCtx.stroke();
+            targetCtx.restore();
+
+            // 2. ORELHINHAS / NADADEIRAS PRETAS NO TOPO
+            targetCtx.fillStyle = skin.details;
+            targetCtx.beginPath();
+            targetCtx.ellipse(-2, -16, 4.5, 7, -0.35, 0, Math.PI * 2);
+            targetCtx.fill();
+            targetCtx.beginPath();
+            targetCtx.ellipse(13, -16, 4.5, 7, 0.35, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            // 3. CORPO FOFO DA PEKI (MARROM COM DETALHES PRETOS NA SKIN PADRÃO)
+            targetCtx.beginPath();
+            targetCtx.ellipse(6, 2, 22, 18.5, 0, 0, Math.PI * 2);
+            const bodyGrad = targetCtx.createRadialGradient(10, -4, 4, 6, 2, 23);
+            bodyGrad.addColorStop(0, skin.bodyLight);
+            bodyGrad.addColorStop(0.6, skin.bodyMid);
+            bodyGrad.addColorStop(1, skin.bodyDark);
+            targetCtx.fillStyle = bodyGrad;
+            targetCtx.fill();
+            targetCtx.lineWidth = 2.4;
+            targetCtx.strokeStyle = '#111111';
+            targetCtx.stroke();
+
+            // Manchinhas pretas/detalhes nas costas
+            targetCtx.fillStyle = skin.details;
+            targetCtx.beginPath();
+            targetCtx.ellipse(-7, -9, 4.2, 2.1, -0.2, 0, Math.PI * 2);
+            targetCtx.fill();
+            targetCtx.beginPath();
+            targetCtx.ellipse(-12, -4, 3.5, 1.8, -0.4, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            // Barriguinha clara
+            targetCtx.beginPath();
+            targetCtx.ellipse(9, 8, 13, 8.5, 0, 0, Math.PI);
+            targetCtx.fillStyle = skin.belly;
+            targetCtx.fill();
+
+            // 4. ROSTINHO FOFO: OLHOS PRETOS BRILHANTES, BOCHECHAS E SORRISO
+            if (isBlinking) {
+                targetCtx.strokeStyle = '#111111';
+                targetCtx.lineWidth = 2.2;
+                targetCtx.beginPath();
+                targetCtx.moveTo(13, -2);
+                targetCtx.lineTo(20, -2);
+                targetCtx.stroke();
+            } else {
+                targetCtx.fillStyle = '#09090b';
+                targetCtx.beginPath();
+                targetCtx.arc(17, -2, 4.3, 0, Math.PI * 2);
+                targetCtx.fill();
+                // Brilho nos olhos
+                targetCtx.fillStyle = '#ffffff';
+                targetCtx.beginPath();
+                targetCtx.arc(18.4, -3.5, 1.6, 0, Math.PI * 2);
+                targetCtx.fill();
+            }
+
+            // Bochecha rosada
+            targetCtx.fillStyle = 'rgba(251, 113, 133, 0.55)';
+            targetCtx.beginPath();
+            targetCtx.ellipse(12, 3.5, 3.5, 2.2, 0, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            // Focinho preto e sorriso
+            targetCtx.fillStyle = '#111111';
+            targetCtx.beginPath();
+            targetCtx.arc(23.5, 0.5, 2.2, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            targetCtx.strokeStyle = '#111111';
+            targetCtx.lineWidth = 1.8;
+            targetCtx.beginPath();
+            targetCtx.arc(19, 3.5, 3.2, 0.15 * Math.PI, 0.85 * Math.PI);
+            targetCtx.stroke();
+
+            // Nadadeira peitoral animada
+            targetCtx.save();
+            targetCtx.translate(3, 9);
+            targetCtx.rotate(Math.sin(tailAngle * 1.2) * 0.25);
+            targetCtx.fillStyle = skin.tailFin;
+            targetCtx.beginPath();
+            targetCtx.ellipse(0, 4, 4.5, 7.5, 0.4, 0, Math.PI * 2);
+            targetCtx.fill();
+            targetCtx.restore();
+
+            // 5. ACESSÓRIOS ESPECIAIS DAS SKINS
+            if (skin.accessory === 'crown') {
+                targetCtx.fillStyle = '#facc15';
+                targetCtx.strokeStyle = '#78350f';
+                targetCtx.lineWidth = 1.5;
+                targetCtx.beginPath();
+                targetCtx.moveTo(-1, -15);
+                targetCtx.lineTo(1, -24);
+                targetCtx.lineTo(5, -18);
+                targetCtx.lineTo(9, -25);
+                targetCtx.lineTo(13, -18);
+                targetCtx.lineTo(17, -24);
+                targetCtx.lineTo(18, -15);
+                targetCtx.closePath();
+                targetCtx.fill();
+                targetCtx.stroke();
+            } else if (skin.accessory === 'star') {
+                targetCtx.fillStyle = '#fde047';
+                targetCtx.beginPath();
+                targetCtx.arc(7, -16, 4.5, 0, Math.PI * 2);
+                targetCtx.fill();
+            } else if (skin.accessory === 'tiara') {
+                targetCtx.fillStyle = '#f8fafc';
+                [-4, 0, 4].forEach((dx, i) => {
+                    targetCtx.beginPath();
+                    targetCtx.arc(7 + dx, -16 - (i === 1 ? 2 : 0), 2.6, 0, Math.PI * 2);
+                    targetCtx.fill();
+                });
+            } else if (skin.accessory === 'flower') {
+                targetCtx.fillStyle = '#fb7185';
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 2.5) {
+                    targetCtx.beginPath();
+                    targetCtx.arc(7 + Math.cos(a) * 3.5, -16 + Math.sin(a) * 3.5, 2.5, 0, Math.PI * 2);
+                    targetCtx.fill();
+                }
+                targetCtx.fillStyle = '#fde047';
+                targetCtx.beginPath();
+                targetCtx.arc(7, -16, 2, 0, Math.PI * 2);
+                targetCtx.fill();
+            } else if (skin.accessory === 'grad_cap') {
+                // Capelo de Formatura CyberMaker
+                targetCtx.fillStyle = '#090d16';
+                targetCtx.strokeStyle = '#22d3ee';
+                targetCtx.lineWidth = 1.6;
+                targetCtx.beginPath();
+                targetCtx.moveTo(-4, -19);
+                targetCtx.lineTo(8, -24);
+                targetCtx.lineTo(20, -19);
+                targetCtx.lineTo(8, -14);
+                targetCtx.closePath();
+                targetCtx.fill();
+                targetCtx.stroke();
+            }
+
+            targetCtx.restore();
+        }
+
+        // --- 6. OBJETO DO JOGADOR (PEKI) COM SALTO DE APENAS 1 CLIQUE ---
+        const peki = {
+            x: 155,
+            y: SAND_FLOOR - 26,
+            width: 56,
+            height: 44,
+            vy: 0,
+            // Física calibrada: 1 único clique tira a Peki do mar, passa com folga
+            // por cima da pontinha da pedra e mergulha no espaço cheio de pérolas!
+            gravity: 0.31,
+            jumpImpulse: -12.2,
+            hasJumpedOut: false,
+            isDiving: false,
+            invulnerableTimer: 0,
+            tailAngle: 0,
+            blinkTimer: 0,
+
+            reset() {
+                this.y = SAND_FLOOR - 26;
+                this.vy = 0;
+                this.hasJumpedOut = false;
+                this.isDiving = false;
+                this.invulnerableTimer = 0;
+            },
+
+            // APENAS 1 CLIQUE (sem pulo duplo no ar)
+            jump() {
+                const insideWater = (this.y + 10) >= SEA_LEVEL;
+                if (!this.hasJumpedOut && insideWater) {
+                    this.vy = this.jumpImpulse;
+                    this.hasJumpedOut = true;
+                    this.isDiving = false;
+                    audio.playJump();
+                    spawnSplashParticles(this.x, this.y, 12);
+                }
+            },
+
+            setDive(diving) {
+                this.isDiving = diving;
+                if (diving && this.vy < 4.5) {
+                    this.vy += 2.6;
+                }
+            },
+
+            update() {
+                const prevY = this.y;
+                this.vy += this.gravity;
+                if (this.isDiving && this.y < SAND_FLOOR - 26) {
+                    this.vy += 0.28;
+                }
+                this.y += this.vy;
+
+                // Espirra gotinhas ao sair ou entrar na linha d'água
+                if ((prevY >= SEA_LEVEL && this.y < SEA_LEVEL) || (prevY < SEA_LEVEL && this.y >= SEA_LEVEL)) {
+                    spawnSplashParticles(this.x, SEA_LEVEL, 14);
+                }
+
+                // Assim que mergulha de volta na água, libera o próximo salto de 1 clique
+                if (this.vy >= 0 && this.y >= SEA_LEVEL + 16) {
+                    this.hasJumpedOut = false;
+                }
+
+                // Limite do fundo de areia do mar
+                if (this.y >= SAND_FLOOR - 24) {
+                    this.y = SAND_FLOOR - 24;
+                    this.vy = 0;
+                    this.hasJumpedOut = false;
+                }
+
+                this.tailAngle += 0.16;
+                this.blinkTimer++;
+                if (this.invulnerableTimer > 0) this.invulnerableTimer--;
+            },
+
+            draw() {
+                // Pisca quando perde 1 coração e está invulnerável
+                if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 5) % 2 === 0) {
+                    return;
+                }
+                const tilt = Math.max(-0.42, Math.min(0.42, this.vy * 0.038));
+                const isBlinking = (this.blinkTimer % 170) < 7;
+                drawMermaidCreature(ctx, this.x, this.y, getEquippedSkin(), this.tailAngle, isBlinking, tilt);
+            }
+        };
+
+        // --- 7. GAIVOTAS BATENDO ASAS PELO CÉU, NUVENS E PARTÍCULAS ---
+        const seagulls = Array.from({ length: 5 }, (_, i) => ({
+            x: 160 + i * 210,
+            y: 55 + (i % 3) * 48,
+            speed: 0.55 + (i % 3) * 0.22,
+            wingPhase: i * 1.3,
+            scale: 0.75 + (i % 2) * 0.25
+        }));
+
+        const clouds = Array.from({ length: 4 }, (_, i) => ({
+            x: 120 + i * 260,
+            y: 45 + (i % 2) * 42,
+            w: 88 + (i % 3) * 24,
+            speed: 0.22 + (i % 2) * 0.1
+        }));
+
+        const stars = Array.from({ length: 55 }, () => ({
+            x: Math.random() * GAME_WIDTH,
+            y: Math.random() * (SEA_LEVEL - 30),
+            r: 0.8 + Math.random() * 1.6,
+            twinkle: Math.random() * Math.PI * 2
+        }));
+
+        let particles = [];
+        function spawnSplashParticles(x, y, count, color = '#e0f2fe') {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 24,
+                    y: y + (Math.random() - 0.5) * 10,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: -1.5 - Math.random() * 3.5,
+                    r: 2 + Math.random() * 3,
+                    alpha: 1,
+                    color
+                });
+            }
+        }
+
+        // --- 8. CICLO DE DIA E NOITE COM PÔR DO SOL BEM DEMORADO E BONITO ---
+        // Ciclo total de distância = 6000 unidades:
+        // 0..1350: Manhã | 1350..2550: Tarde | 2550..4650: Pôr do Sol Longo (35% do ciclo!) | 4650..6000: Noite Estrelada
+        function lerpColor(hexA, hexB, t) {
+            const a = parseInt(hexA.slice(1), 16);
+            const b = parseInt(hexB.slice(1), 16);
+            const r = Math.round(((a >> 16) & 255) + (((b >> 16) & 255) - ((a >> 16) & 255)) * t);
+            const g = Math.round(((a >> 8) & 255) + (((b >> 8) & 255) - ((a >> 8) & 255)) * t);
+            const bl = Math.round((a & 255) + ((b & 255) - (a & 255)) * t);
+            return `rgb(${r}, ${g}, ${bl})`;
+        }
+
+        function getSkyEnvironment() {
+            const cycleLength = 6000;
+            const p = (worldDistance % cycleLength) / cycleLength;
+
+            const keyframes = [
+                { p: 0.00, top: '#38bdf8', bot: '#bae6fd', seaTop: '#0284c7', seaBot: '#082f49', label: 'Manhã Serena', icon: '🌅', night: 0 },
+                { p: 0.22, top: '#0284c7', bot: '#7dd3fc', seaTop: '#0369a1', seaBot: '#0c4a6e', label: 'Tarde Ensolarada', icon: '☀️', night: 0 },
+                { p: 0.42, top: '#7c2d12', bot: '#fb923c', seaTop: '#9a3412', seaBot: '#1e1b4b', label: 'Pôr do Sol Dourado', icon: '🌇', night: 0.15 },
+                { p: 0.62, top: '#4c1d95', bot: '#f97316', seaTop: '#6d28d9', seaBot: '#0f172a', label: 'Crepúsculo Mágico', icon: '🌇', night: 0.38 },
+                { p: 0.78, top: '#090d16', bot: '#1e1b4b', seaTop: '#0f172a', seaBot: '#020617', label: 'Noite Estrelada', icon: '🌙', night: 0.95 },
+                { p: 0.93, top: '#1e1b4b', bot: '#f472b6', seaTop: '#1e3a8a', seaBot: '#090d16', label: 'Alvorada', icon: '🌅', night: 0.45 },
+                { p: 1.00, top: '#38bdf8', bot: '#bae6fd', seaTop: '#0284c7', seaBot: '#082f49', label: 'Manhã Serena', icon: '🌅', night: 0 }
+            ];
+
+            let k1 = keyframes[0], k2 = keyframes[1];
+            for (let i = 0; i < keyframes.length - 1; i++) {
+                if (p >= keyframes[i].p && p <= keyframes[i + 1].p) {
+                    k1 = keyframes[i];
+                    k2 = keyframes[i + 1];
+                    break;
+                }
+            }
+
+            const localT = (p - k1.p) / Math.max(0.0001, k2.p - k1.p);
+            return {
+                cycleProgress: p,
+                skyTop: lerpColor(k1.top, k2.top, localT),
+                skyBot: lerpColor(k1.bot, k2.bot, localT),
+                seaTop: lerpColor(k1.seaTop, k2.seaTop, localT),
+                seaBot: lerpColor(k1.seaBot, k2.seaBot, localT),
+                nightAlpha: k1.night + (k2.night - k1.night) * localT,
+                label: k1.label,
+                icon: k1.icon
+            };
+        }
+
+        // --- 9. PEDRAS MARINHAS (SÓ A PONTINHA PARA FORA) E ESPAÇOS COM PÉROLAS ---
+        let rocks = [];
+        let pearls = [];
+        let spawnTimer = 40;
+
+        function spawnRocksAndPearlsInGap() {
+            const startX = GAME_WIDTH + 50;
+            const rockWidth = 68;
+            const waterDepth = SAND_FLOOR - SEA_LEVEL; // 158px
+
+            // REQUISITO ESSENCIAL: A pedra fica com APENAS UMA PONTINHA para fora da água (12 a 18 pixels)
+            const tipAboveWater1 = 12 + Math.floor(Math.random() * 7); // 12..18px
+            const tipAboveWater2 = 12 + Math.floor(Math.random() * 7); // 12..18px
+
+            const rockHeight1 = waterDepth + tipAboveWater1;
+            const rockHeight2 = waterDepth + tipAboveWater2;
+
+            // Espaço generoso entre as pedras para a sereia cair de volta no mar e pegar as pérolas
+            const gapBetweenRocks = 265;
+
+            // Primeira Pedra
+            rocks.push({
+                x: startX,
+                y: SAND_FLOOR - rockHeight1,
+                width: rockWidth,
+                height: rockHeight1,
+                coralColor: '#fb7185'
+            });
+
+            // 3 Pérolas no arco do salto logo acima da pontinha da Primeira Pedra
+            for (let i = 0; i < 3; i++) {
+                pearls.push({
+                    x: startX + 8 + i * 25,
+                    y: SEA_LEVEL - 44 - (i === 1 ? 14 : 0),
+                    r: 10.5,
+                    phase: i * 0.7
+                });
+            }
+
+            // VÁRIAS PÉROLAS DENTRO DO MAR NO ESPAÇO ENTRE AS DUAS PEDRAS!
+            const gapCenter = startX + rockWidth + gapBetweenRocks * 0.5;
+            const gapPearlPositions = [
+                { dx: -72, y: SEA_LEVEL + 52 },
+                { dx: -36, y: SEA_LEVEL + 85 },
+                { dx: 0,   y: SAND_FLOOR - 32 },
+                { dx: 36,  y: SEA_LEVEL + 85 },
+                { dx: 72,  y: SEA_LEVEL + 52 },
+                { dx: -22, y: SEA_LEVEL + 42 },
+                { dx: 22,  y: SEA_LEVEL + 42 }
+            ];
+
+            gapPearlPositions.forEach((pt, idx) => {
+                pearls.push({
+                    x: gapCenter + pt.dx,
+                    y: pt.y,
+                    r: 11,
+                    phase: idx * 0.5
+                });
+            });
+
+            // Segunda Pedra (após o espaço recheado de pérolas)
+            const secondRockX = startX + rockWidth + gapBetweenRocks;
+            rocks.push({
+                x: secondRockX,
+                y: SAND_FLOOR - rockHeight2,
+                width: rockWidth,
+                height: rockHeight2,
+                coralColor: '#a855f7'
+            });
+
+            // 3 Pérolas no arco do salto acima da Segunda Pedra
+            for (let i = 0; i < 3; i++) {
+                pearls.push({
+                    x: secondRockX + 8 + i * 25,
+                    y: SEA_LEVEL - 44 - (i === 1 ? 14 : 0),
+                    r: 10.5,
+                    phase: i * 0.7
+                });
+            }
+        }
+
+        function drawMarineRock(r) {
+            ctx.save();
+            // Formato rochoso vindo do fundo do mar até a pontinha fora d'água
+            ctx.beginPath();
+            ctx.moveTo(r.x, r.y + r.height);
+            ctx.lineTo(r.x + 6, r.y + r.height * 0.4);
+            ctx.lineTo(r.x + 16, r.y + 12);
+            ctx.lineTo(r.x + r.width * 0.45, r.y);
+            ctx.lineTo(r.x + r.width * 0.76, r.y + 9);
+            ctx.lineTo(r.x + r.width - 6, r.y + r.height * 0.45);
+            ctx.lineTo(r.x + r.width, r.y + r.height);
+            ctx.closePath();
+
+            const grad = ctx.createLinearGradient(r.x, r.y, r.x + r.width, r.y + r.height);
+            grad.addColorStop(0, '#94a3b8');
+            grad.addColorStop(0.25, '#64748b');
+            grad.addColorStop(0.7, '#334155');
+            grad.addColorStop(1, '#0f172a');
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.stroke();
+
+            // Espuminha branca exatamente na linha da água (mostrando que só a ponta sai do mar)
+            ctx.fillStyle = 'rgba(240, 249, 255, 0.9)';
+            ctx.beginPath();
+            ctx.ellipse(r.x + r.width * 0.5, SEA_LEVEL, r.width * 0.48, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pequenos corais decorativos na base submersa da pedra
+            ctx.fillStyle = r.coralColor;
+            ctx.beginPath();
+            ctx.arc(r.x + 18, r.y + r.height - 18, 7, 0, Math.PI * 2);
+            ctx.arc(r.x + r.width - 18, r.y + r.height - 28, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawGlowingPearl(p) {
+            const bob = Math.sin(frameCount * 0.08 + p.phase) * 3.5;
+            const py = p.y + bob;
+
+            ctx.save();
+            const glow = ctx.createRadialGradient(p.x, py, 2, p.x, py, p.r * 1.9);
+            glow.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+            glow.addColorStop(0.6, 'rgba(251, 191, 36, 0.35)');
+            glow.addColorStop(1, 'rgba(251, 191, 36, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(p.x, py, p.r * 1.9, 0, Math.PI * 2);
+            ctx.fill();
+
+            const sphere = ctx.createRadialGradient(p.x - 3, py - 3, 1, p.x, py, p.r);
+            sphere.addColorStop(0, '#ffffff');
+            sphere.addColorStop(0.65, '#fef08a');
+            sphere.addColorStop(1, '#f59e0b');
+            ctx.fillStyle = sphere;
+            ctx.beginPath();
+            ctx.arc(p.x, py, p.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // --- 10. DESENHO DO CENÁRIO COMPLETO (CÉU 66%, SOL/LUA, GAIVOTAS E MAR 34%) ---
+        function drawWorldScene() {
+            const env = getSkyEnvironment();
+
+            // Atualiza badge do horário no HUD
+            const phaseLabel = document.getElementById('timePhaseLabel');
+            const phaseIcon = document.getElementById('timePhaseIcon');
+            if (phaseLabel && phaseLabel.textContent !== env.label) {
+                phaseLabel.textContent = env.label;
+                phaseIcon.textContent = env.icon;
+            }
+
+            // 1. CÉU (66% superiores da tela)
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, SEA_LEVEL);
+            skyGrad.addColorStop(0, env.skyTop);
+            skyGrad.addColorStop(1, env.skyBot);
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, GAME_WIDTH, SEA_LEVEL);
+
+            // 2. ESTRELAS CINTILANTES (Aparecem no Pôr do Sol e Noite)
+            if (env.nightAlpha > 0.05) {
+                ctx.save();
+                stars.forEach(s => {
+                    const alpha = env.nightAlpha * (0.55 + 0.45 * Math.sin(frameCount * 0.05 + s.twinkle));
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.restore();
+            }
+
+            // 3. SOL E LUA QUE ACOMPANHAM O JOGADOR PELO CÉU
+            const p = env.cycleProgress;
+            ctx.save();
+            if (p < 0.74) {
+                // Sol cruzando o céu e descendo devagar no pôr do sol
+                const sunProgress = p / 0.74;
+                const sunX = 130 + sunProgress * (GAME_WIDTH - 260);
+                const sunY = 75 + Math.pow((sunProgress - 0.38) * 1.55, 2) * 215;
+
+                const sunHalo = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 95);
+                sunHalo.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+                sunHalo.addColorStop(0.45, p > 0.38 ? 'rgba(249, 115, 22, 0.45)' : 'rgba(253, 224, 71, 0.35)');
+                sunHalo.addColorStop(1, 'rgba(249, 115, 22, 0)');
+                ctx.fillStyle = sunHalo;
+                ctx.beginPath();
+                ctx.arc(sunX, sunY, 95, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = p > 0.40 ? '#fb923c' : '#fde047';
+                ctx.beginPath();
+                ctx.arc(sunX, sunY, 34, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // Lua brilhante à noite acompanhando o avanço
+                const moonProgress = (p - 0.74) / 0.26;
+                const moonX = 160 + moonProgress * (GAME_WIDTH - 320);
+                const moonY = 85 + Math.sin(moonProgress * Math.PI) * -25;
+
+                const moonHalo = ctx.createRadialGradient(moonX, moonY, 8, moonX, moonY, 70);
+                moonHalo.addColorStop(0, 'rgba(224, 242, 254, 0.8)');
+                moonHalo.addColorStop(1, 'rgba(224, 242, 254, 0)');
+                ctx.fillStyle = moonHalo;
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 70, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 26, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+
+            // 4. NUVENS SUAVES
+            clouds.forEach(c => {
+                c.x -= c.speed;
+                if (c.x + c.w < -40) c.x = GAME_WIDTH + 60;
+                ctx.fillStyle = env.nightAlpha > 0.5 ? 'rgba(148, 163, 184, 0.18)' : 'rgba(255, 255, 255, 0.55)';
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 20, 0, Math.PI * 2);
+                ctx.arc(c.x + 22, c.y - 6, 25, 0, Math.PI * 2);
+                ctx.arc(c.x + 46, c.y, 19, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 5. GAIVOTAS VOANDO E BATENDO ASAS PELO CÉU
+            seagulls.forEach(g => {
+                g.x -= g.speed + (gameState === 'PLAYING' ? gameSpeed * 0.12 : 0);
+                g.wingPhase += 0.13;
+                if (g.x < -40) {
+                    g.x = GAME_WIDTH + 40 + Math.random() * 80;
+                    g.y = 45 + Math.random() * (SEA_LEVEL - 130);
+                }
+                const flap = Math.sin(g.wingPhase) * 8;
+                ctx.save();
+                ctx.translate(g.x, g.y);
+                ctx.scale(g.scale, g.scale);
+                ctx.strokeStyle = env.nightAlpha > 0.6 ? '#e2e8f0' : '#1e293b';
+                ctx.lineWidth = 2.4;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-14, flap);
+                ctx.quadraticCurveTo(-6, -7 + flap * 0.3, 0, 0);
+                ctx.quadraticCurveTo(6, -7 + flap * 0.3, 14, flap);
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            // 6. MAR (Ocupa apenas os 34% inferiores da tela: de SEA_LEVEL até GAME_HEIGHT)
+            const seaGrad = ctx.createLinearGradient(0, SEA_LEVEL, 0, GAME_HEIGHT);
+            seaGrad.addColorStop(0, env.seaTop);
+            seaGrad.addColorStop(1, env.seaBot);
+            ctx.fillStyle = seaGrad;
+            ctx.fillRect(0, SEA_LEVEL, GAME_WIDTH, GAME_HEIGHT - SEA_LEVEL);
+
+            // Marca d'água sutil da Formatura CyberMaker dentro do mar
+            ctx.save();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
+            ctx.font = 'bold 17px Fredoka, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('FORMATURA CYBERMAKER • ISSAKE & DAVI STELLA', GAME_WIDTH / 2, SEA_LEVEL + 78);
+            ctx.restore();
+
+            // Ondas suaves na superfície da água
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(0, SEA_LEVEL);
+            for (let x = 0; x <= GAME_WIDTH; x += 24) {
+                const waveY = SEA_LEVEL + Math.sin(x * 0.03 + frameCount * 0.06) * 3.5;
+                ctx.lineTo(x, waveY);
+            }
+            ctx.strokeStyle = 'rgba(186, 230, 253, 0.75)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
+
+            // Leito de areia no fundo do mar
+            const sandGrad = ctx.createLinearGradient(0, SAND_FLOOR, 0, GAME_HEIGHT);
+            sandGrad.addColorStop(0, '#d97706');
+            sandGrad.addColorStop(1, '#78350f');
+            ctx.fillStyle = sandGrad;
+            ctx.fillRect(0, SAND_FLOOR, GAME_WIDTH, GAME_HEIGHT - SAND_FLOOR);
+        }
+
+        // --- 11. ATUALIZAÇÃO DE VIDAS, COLISÕES E INTERFACE ---
+        function updateHeartsUI() {
+            const container = document.getElementById('heartsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('i');
+                if (i < lives) {
+                    heart.className = 'fa-solid fa-heart text-rose-500 drop-shadow';
+                } else {
+                    heart.className = 'fa-regular fa-heart text-slate-600';
+                }
+                container.appendChild(heart);
+            }
+        }
+
+        function updateAllPearlsUI() {
+            document.getElementById('headerPearlsCount').textContent = savedPearls;
+            document.getElementById('shopPearlsBalance').textContent = savedPearls;
+            document.getElementById('hudPearls').textContent = runPearls;
+            document.getElementById('hudScore').textContent = String(Math.floor(score)).padStart(4, '0');
+            document.getElementById('hudHigh').textContent = String(Math.floor(highScore)).padStart(4, '0');
+        }
+
+        function renderSkinsShop() {
+            const list = document.getElementById('skinsListContainer');
+            list.innerHTML = '';
+
+            MERMAID_SKINS.forEach(skin => {
+                const isUnlocked = unlockedSkins.includes(skin.id);
+                const isEquipped = equippedSkinId === skin.id;
+
+                const card = document.createElement('div');
+                card.className = `flex items-center justify-between gap-2 p-2 rounded-xl border transition ${
+                    isEquipped
+                        ? 'bg-cyan-950/80 border-cyan-400 shadow-md'
+                        : 'bg-slate-800/80 border-slate-700 hover:border-slate-500'
+                }`;
+
+                const left = document.createElement('div');
+                left.className = 'flex items-center gap-2 min-w-0';
+
+                const miniCanvas = document.createElement('canvas');
+                miniCanvas.width = 68;
+                miniCanvas.height = 44;
+                miniCanvas.className = 'w-14 h-9 shrink-0 rounded-lg bg-slate-900/80 border border-slate-700';
+                const mCtx = miniCanvas.getContext('2d');
+                drawMermaidCreature(mCtx, 42, 24, skin, 0.5, false, 0);
+
+                const info = document.createElement('div');
+                info.className = 'min-w-0';
+                info.innerHTML = `
+                    <p class="text-xs font-extrabold text-white truncate">${skin.name}</p>
+                    <p class="text-[10px] text-slate-300 truncate">${skin.desc}</p>
+                `;
+
+                left.appendChild(miniCanvas);
+                left.appendChild(info);
+
+                const actionBtn = document.createElement('button');
+                if (isEquipped) {
+                    actionBtn.className = 'px-2.5 py-1 rounded-lg bg-cyan-500 text-slate-950 font-extrabold text-[10px] shrink-0 cursor-default';
+                    actionBtn.textContent = 'EQUIPADA';
+                } else if (isUnlocked) {
+                    actionBtn.className = 'px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-cyan-400 hover:text-slate-950 text-cyan-200 font-bold text-[10px] shrink-0 transition cursor-pointer';
+                    actionBtn.textContent = 'USAR';
+                    actionBtn.onclick = () => {
+                        equippedSkinId = skin.id;
+                        savePlayerData();
+                        renderSkinsShop();
+                        renderEquippedMiniPreview();
+                    };
+                } else {
+                    const canAfford = savedPearls >= skin.price;
+                    actionBtn.className = `px-2.5 py-1 rounded-lg font-extrabold text-[10px] shrink-0 transition cursor-pointer ${
+                        canAfford
+                            ? 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+                            : 'bg-slate-700/70 text-slate-400'
+                    }`;
+                    actionBtn.innerHTML = `⚪ ${skin.price}`;
+                    actionBtn.onclick = () => {
+                        if (savedPearls >= skin.price) {
+                            savedPearls -= skin.price;
+                            unlockedSkins.push(skin.id);
+                            equippedSkinId = skin.id;
+                            audio.playPearl();
+                            savePlayerData();
+                            updateAllPearlsUI();
+                            renderSkinsShop();
+                            renderEquippedMiniPreview();
+                        }
+                    };
+                }
+
+                card.appendChild(left);
+                card.appendChild(actionBtn);
+                list.appendChild(card);
+            });
+        }
+
+        function renderEquippedMiniPreview() {
+            const skin = getEquippedSkin();
+            const nameEl = document.getElementById('equippedSkinName');
+            if (nameEl) nameEl.textContent = skin.name;
+
+            const prevCanvas = document.getElementById('equippedPreviewCanvas');
+            if (prevCanvas) {
+                const pCtx = prevCanvas.getContext('2d');
+                pCtx.clearRect(0, 0, prevCanvas.width, prevCanvas.height);
+                drawMermaidCreature(pCtx, 46, 25, skin, frameCount * 0.1, false, 0);
+            }
+        }
+
+        // --- 12. FLUXO DE PARTIDA: INICIAR, GAME OVER E VOLTAR PARA HOME ---
+        function startGame() {
+            audio.startRelaxingMusic();
+            gameState = 'PLAYING';
+            score = 0;
+            runPearls = 0;
+            lives = 3;
+            gameSpeed = 3.2; // Velocidade mais calma e suave
+            rocks = [];
+            pearls = [];
+            particles = [];
+            spawnTimer = 30;
+            peki.reset();
+
+            document.getElementById('homeOverlay').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            document.getElementById('inGameHud').classList.remove('hidden');
+
+            updateHeartsUI();
+            updateAllPearlsUI();
+        }
+
+        function triggerGameOver() {
+            gameState = 'GAMEOVER';
+            if (score > highScore) {
+                highScore = Math.floor(score);
+            }
+            savePlayerData();
+
+            document.getElementById('inGameHud').classList.add('hidden');
+            document.getElementById('overScore').textContent = Math.floor(score);
+            document.getElementById('overRunPearls').textContent = `+${runPearls} ⚪`;
+            document.getElementById('overTotalPearls').textContent = `${savedPearls} ⚪`;
+            document.getElementById('gameOverOverlay').classList.remove('hidden');
+        }
+
+        function goToHome() {
+            gameState = 'HOME';
+            rocks = [];
+            pearls = [];
+            peki.reset();
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            document.getElementById('inGameHud').classList.add('hidden');
+            document.getElementById('homeOverlay').classList.remove('hidden');
+            updateAllPearlsUI();
+            renderSkinsShop();
+            renderEquippedMiniPreview();
+        }
+
+        // --- 13. LOOP PRINCIPAL DO JOGO ---
+        function gameLoop() {
+            frameCount++;
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+            // O mundo e o ciclo solar avançam suavemente
+            worldDistance += (gameState === 'PLAYING' ? gameSpeed * 0.85 : 0.7);
+
+            drawWorldScene();
+
+            if (gameState === 'PLAYING') {
+                // Aceleração muito sutil para manter o jogo sempre calmo e agradável
+                gameSpeed = Math.min(4.5, 3.2 + score * 0.0004);
+                score += 0.12;
+
+                peki.update();
+
+                // Gerador de Pedras Marinhas + Espaços com Pérolas
+                spawnTimer--;
+                if (spawnTimer <= 0) {
+                    spawnRocksAndPearlsInGap();
+                    spawnTimer = 210 + Math.floor(Math.random() * 45);
+                }
+
+                // Atualiza e desenha Pérolas
+                for (let i = pearls.length - 1; i >= 0; i--) {
+                    const p = pearls[i];
+                    p.x -= gameSpeed;
+                    drawGlowingPearl(p);
+
+                    const dx = peki.x - p.x;
+                    const dy = peki.y - p.y;
+                    if (Math.hypot(dx, dy) < p.r + 24) {
+                        runPearls++;
+                        savedPearls++;
+                        score += 15;
+                        audio.playPearl();
+                        spawnSplashParticles(p.x, p.y, 8, '#fef08a');
+                        pearls.splice(i, 1);
+                        savePlayerData();
+                        updateAllPearlsUI();
+                        continue;
+                    }
+
+                    if (p.x < -40) pearls.splice(i, 1);
+                }
+
+                // Atualiza e desenha Pedras Marinhas
+                for (let i = rocks.length - 1; i >= 0; i--) {
+                    const r = rocks[i];
+                    r.x -= gameSpeed;
+                    drawMarineRock(r);
+
+                    // Caixa de colisão justa da Peki com a pedra
+                    const pekiLeft = peki.x - 16;
+                    const pekiRight = peki.x + 18;
+                    const pekiTop = peki.y - 12;
+                    const pekiBottom = peki.y + 14;
+
+                    const rockLeft = r.x + 10;
+                    const rockRight = r.x + r.width - 10;
+                    const rockTop = r.y + 6;
+                    const rockBottom = r.y + r.height;
+
+                    if (
+                        peki.invulnerableTimer === 0 &&
+                        pekiRight > rockLeft &&
+                        pekiLeft < rockRight &&
+                        pekiBottom > rockTop &&
+                        pekiTop < rockBottom
+                    ) {
+                        lives--;
+                        peki.invulnerableTimer = 85;
+                        audio.playHit();
+                        spawnSplashParticles(peki.x, peki.y, 16, '#fb7185');
+                        updateHeartsUI();
+
+                        if (lives <= 0) {
+                            triggerGameOver();
+                            break;
+                        }
+                    }
+
+                    if (r.x + r.width < -60) rocks.splice(i, 1);
+                }
+
+                peki.draw();
+                if (frameCount % 6 === 0) updateAllPearlsUI();
+            } else {
+                // Na tela Home, a Peki nada tranquilamente no mar ao fundo
+                peki.y = SEA_LEVEL + 65 + Math.sin(frameCount * 0.05) * 10;
+                peki.tailAngle += 0.12;
+                peki.draw();
+                if (frameCount % 4 === 0) renderEquippedMiniPreview();
+            }
+
+            // Atualiza partículas de água e brilho
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const pt = particles[i];
+                pt.x += pt.vx;
+                pt.y += pt.vy;
+                pt.vy += 0.15;
+                pt.alpha -= 0.028;
+                if (pt.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = pt.alpha;
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- 14. EVENTOS DE TECLADO, CLIQUE E BOTÕES ---
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
+                if (gameState === 'PLAYING') {
+                    peki.jump();
+                } else if (gameState === 'HOME') {
+                    startGame();
+                } else if (gameState === 'GAMEOVER') {
+                    startGame();
+                }
+            }
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                e.preventDefault();
+                if (gameState === 'PLAYING') peki.setDive(true);
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+                peki.setDive(false);
+            }
+        });
+
+        // 1 Clique no Canvas faz a Peki saltar por cima da pedra
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (gameState === 'PLAYING') {
+                peki.jump();
+            }
+        });
+
+        document.getElementById('jumpControlBtn').addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (gameState === 'PLAYING') peki.jump();
+            else startGame();
+        });
+
+        const diveBtn = document.getElementById('diveControlBtn');
+        diveBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (gameState === 'PLAYING') peki.setDive(true);
+        });
+        diveBtn.addEventListener('pointerup', () => peki.setDive(false));
+        diveBtn.addEventListener('pointerleave', () => peki.setDive(false));
+
+        // Botões da Home e Game Over
+        document.getElementById('startPlayBtn').addEventListener('click', startGame);
+        document.getElementById('retryGameBtn').addEventListener('click', startGame);
+        document.getElementById('goHomeBtn').addEventListener('click', goToHome);
+
+        // Botão de +50 Pérolas para facilitar demonstração das skins na Formatura
+        document.getElementById('bonusPearlsBtn').addEventListener('click', () => {
+            savedPearls += 50;
+            audio.playPearl();
+            savePlayerData();
+            updateAllPearlsUI();
+            renderSkinsShop();
+        });
+
+        // Botão de Música Relaxante ON/OFF
+        document.getElementById('musicToggleBtn').addEventListener('click', () => {
+            audio.init();
+            audio.enabled = !audio.enabled;
+            if (audio.enabled) audio.startRelaxingMusic();
+            document.getElementById('musicIcon').className = audio.enabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            document.getElementById('musicText').textContent = audio.enabled ? 'Música: ON' : 'Música: OFF';
+        });
+
+        // Botão de Tela Cheia
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            const wrapper = document.documentElement;
+            if (!document.fullscreenElement) {
+                if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        // Inicialização na abertura da página
+        window.onload = () => {
+            updateAllPearlsUI();
+            renderSkinsShop();
+            renderEquippedMiniPreview();
+            gameLoop();
+        };
+    </script>
+</body>
+</html>
